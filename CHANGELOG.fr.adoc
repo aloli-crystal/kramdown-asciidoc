@@ -3,6 +3,14 @@
 :toc-title: Versions
 :toclevels: 2
 
+== v2.1.1.5 — 2026-09-29
+
+* Corrige une boucle infinie (100 % CPU, `convert` ne rendait jamais la main) sur une ligne commençant par `|` qui n'était pas l'en-tête d'un tableau à ligne de séparation, p. ex. `x| A | b |` suivie de `| N | c |`, ou une ligne de tableau après une ligne de texte. Le parseur de paragraphe refusait cette ligne sans la consommer : la boucle principale n'avançait plus. Même cause pour `#foo` (sans espace) et une citation indentée `  > citation`.
+* Le parseur de paragraphe consomme désormais toujours sa première ligne, et la boucle principale lève une exception au lieu de boucler si un bloc ne consomme rien.
+* Tableaux plus proches de kramdown : dans un tableau, toute ligne non vide contenant un pipe est une ligne du tableau (p. ex. `{% if x %}| a | b |`) ; une ligne sans ligne de séparation devient un tableau sans en-tête (`[%noheader,cols=N*]`) ; les lignes sont complétées de cellules vides pour qu'Asciidoctor n'en perde aucune.
+* Les citations indentées de 3 espaces au plus sont reconnues.
+* Specs de non-régression `spec/termination_spec.cr`, exécutées dans un processus fils tué au bout de 5 s (`ConversionGuard`) : une régression fait échouer la suite au lieu de la bloquer.
+
 == v2.1.1.4 — 2026-07-28
 
 * Renomme le shard `crystal-kramdown-asciidoc` → `kramdown-asciidoc` (abandon du préfixe `crystal-` ; l'organisation `aloli-crystal` porte déjà le contexte « Crystal »).

@@ -3,6 +3,14 @@
 :toc-title: Versions
 :toclevels: 2
 
+== v2.1.1.5 — 2026-09-29
+
+* Fix an infinite loop (100 % CPU, `convert` never returned) on a line starting with `|` that was not the header of a table with a separator row, e.g. `x| A | b |` followed by `| N | c |`, or a table row after a text line. The paragraph parser refused such a line without consuming it, so the main loop never advanced. Same cause for `#foo` (no space) and an indented `  > quote`.
+* The paragraph parser now always consumes its first line, and the main loop raises instead of looping if a block consumes nothing.
+* Tables closer to kramdown: inside a table, any non-blank line containing a pipe is a row (e.g. `{% if x %}| a | b |`); a row without separator row becomes a headerless table (`[%noheader,cols=N*]`); rows are padded with empty cells so that Asciidoctor drops no cell.
+* Blockquotes indented by up to 3 spaces are recognised.
+* Non-regression specs `spec/termination_spec.cr`, run in a child process killed after 5 s (`ConversionGuard`) so that a regression fails instead of hanging the suite.
+
 == v2.1.1.4 — 2026-07-28
 
 * Rename the shard `crystal-kramdown-asciidoc` → `kramdown-asciidoc` (drop the `crystal-` prefix; the `aloli-crystal` org already carries the "Crystal" context).

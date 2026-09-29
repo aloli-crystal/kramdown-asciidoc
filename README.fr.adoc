@@ -14,7 +14,7 @@ Ajoutez la dependance dans votre `shard.yml` :
 dependencies:
   kramdown-asciidoc:
     github: aloli-crystal/kramdown-asciidoc
-    version: "~> 2.1.1.4"
+    version: "~> 2.1.1.5"
 ----
 
 Puis lancez `shards install`.
