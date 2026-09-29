@@ -108,8 +108,12 @@ module KramdownAsciidoc
     def parse : Document
       doc = Document.new
       while @pos < @lines.size
+        start = @pos
         node = parse_block
         doc.add(node) if node
+        # Garde-fou : chaque bloc doit consommer au moins une ligne, sinon
+        # la boucle ne se termine jamais (cf. lignes de tableau orphelines).
+        raise "KramdownAsciidoc::Parser: no progress at line #{start + 1}" if @pos == start
       end
       doc
     end
@@ -159,13 +163,19 @@ module KramdownAsciidoc
         return HorizontalRuleNode.new
       end
 
-      # Table
+      # Table (with header and separator row)
       if line.strip.starts_with?("|") && @pos + 1 < @lines.size && @lines[@pos + 1].strip.matches?(/^\|[\s\-:|]+\|$/)
         return parse_table
       end
 
-      # Blockquote
-      if line.starts_with?("> ") || line == ">"
+      # Table without header, as kramdown does: a row not followed by a
+      # separator, or a line containing a pipe followed by such a row
+      if line.strip.starts_with?("|") || (line.includes?("|") && @lines[@pos + 1]?.try(&.strip.starts_with?("|")))
+        return parse_table_rows_only
+      end
+
+      # Blockquote (up to 3 spaces of indentation, as in kramdown)
+      if blockquote_line?(line)
         return parse_blockquote
       end
 
@@ -209,10 +219,15 @@ module KramdownAsciidoc
       FencedCodeNode.new(content_lines.join("\n"), language)
     end
 
+    private def blockquote_line?(line : String) : Bool
+      line.matches?(/^ {0,3}>( |$)/)
+    end
+
     private def parse_blockquote : BlockquoteNode
       lines = [] of String
       while @pos < @lines.size
         line = @lines[@pos]
+        line = line.lstrip if blockquote_line?(line)
         if line.starts_with?("> ")
           lines << line[2..]
           @pos += 1
@@ -274,17 +289,26 @@ module KramdownAsciidoc
       # Separator row (skip it)
       @pos += 1
 
-      # Data rows
+      TableNode.new(headers, parse_table_body)
+    end
+
+    private def parse_table_rows_only : TableNode
+      TableNode.new([] of String, parse_table_body)
+    end
+
+    # Data rows: like kramdown, any following non-blank line containing a
+    # pipe is a row, even when it does not start with one
+    # (e.g. `{% if x %}| a | b |`).
+    private def parse_table_body : Array(Array(String))
       rows = [] of Array(String)
       while @pos < @lines.size
         line = @lines[@pos]
         break if line.strip.empty?
-        break unless line.strip.starts_with?("|")
+        break unless line.includes?("|")
         rows << parse_table_row(line)
         @pos += 1
       end
-
-      TableNode.new(headers, rows)
+      rows
     end
 
     private def parse_table_row(line : String) : Array(String)
@@ -337,7 +361,10 @@ module KramdownAsciidoc
     end
 
     private def parse_paragraph : ParagraphNode
-      lines = [] of String
+      # The first line is always consumed: parse_block has already ruled out
+      # every other block type, so breaking on it would loop forever.
+      lines = [@lines[@pos]]
+      @pos += 1
       while @pos < @lines.size
         line = @lines[@pos]
         break if line.strip.empty?

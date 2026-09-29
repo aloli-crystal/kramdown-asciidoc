@@ -89,21 +89,35 @@ module KramdownAsciidoc
     end
 
     private def convert_table(node : TableNode) : String
+      headerless = node.headers.empty?
+      # AsciiDoc takes the column count from the first row (or the `cols`
+      # attribute) and drops the cells of an incomplete last row: rows are
+      # padded with empty cells so that no content is lost.
+      cols = headerless ? (node.rows.max_of?(&.size) || 1) : node.headers.size
+
       result = String.build do |io|
+        if headerless
+          # Headerless table (kramdown table without separator row): the
+          # column count is explicit and no row may be taken as a header.
+          io << "[%noheader,cols=#{cols}*]\n"
+        end
         io << "|===\n"
 
         # Header row
-        node.headers.each do |header|
-          io << "| #{convert_inline(header)} "
+        unless headerless
+          node.headers.each do |header|
+            io << "| #{convert_inline(header)} "
+          end
+          io << "\n"
         end
-        io << "\n"
 
         # Data rows — each row separated by a blank line from the header
-        node.rows.each do |row|
-          io << "\n"
+        node.rows.each_with_index do |row, index|
+          io << "\n" unless index == 0 && headerless
           row.each do |cell|
             io << "| #{convert_inline(cell)} "
           end
+          (-row.size % cols).times { io << "| " }
           io << "\n"
         end
 
