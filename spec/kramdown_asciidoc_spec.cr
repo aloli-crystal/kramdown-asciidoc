@@ -190,23 +190,23 @@ describe KramdownAsciidoc do
 
       it "converts a complex document" do
         md = <<-MD
-        # Title
+          # Title
 
-        A paragraph with **bold** and *italic*.
+          A paragraph with **bold** and *italic*.
 
-        ## Code Example
+          ## Code Example
 
-        ```crystal
-        puts "hello"
-        ```
+          ```crystal
+          puts "hello"
+          ```
 
-        - Item 1
-        - Item 2
+          - Item 1
+          - Item 2
 
-        > A quote
+          > A quote
 
-        ---
-        MD
+          ---
+          MD
         result = KramdownAsciidoc.convert(md)
         result.should contain("= Title")
         result.should contain("*bold*")

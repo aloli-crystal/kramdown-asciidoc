@@ -17,14 +17,14 @@ describe "Integration · document structure" do
 
   it "emits the document title first in the output" do
     result = IntegrationHelper.convert(<<-MD)
-    # Main Title
+      # Main Title
 
-    Body.
+      Body.
 
-    ## Section
+      ## Section
 
-    Sub.
-    MD
+      Sub.
+      MD
     # The document title must appear before the first section heading.
     title_idx = result.index("= Main Title")
     section_idx = result.index("== Section")

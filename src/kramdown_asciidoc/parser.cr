@@ -133,7 +133,7 @@ module KramdownAsciidoc
       while @pos < @lines.size && @lines[@pos].strip.empty?
         @pos += 1
       end
-      return nil if @pos >= @lines.size
+      return if @pos >= @lines.size
 
       line = @lines[@pos]
 

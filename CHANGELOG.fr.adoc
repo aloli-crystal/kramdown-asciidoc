@@ -3,6 +3,10 @@
 :toc-title: Versions
 :toclevels: 2
 
+== v2.1.1.6 — 2026-10-16
+
+* ameba 1.7 et Crystal 1.22.0 en CI ; nouvelles règles appliquées, aucun changement de comportement.
+
 == v2.1.1.5 — 2026-09-29
 
 * Corrige une boucle infinie (100 % CPU, `convert` ne rendait jamais la main) sur une ligne commençant par `|` qui n'était pas l'en-tête d'un tableau à ligne de séparation, p. ex. `x| A | b |` suivie de `| N | c |`, ou une ligne de tableau après une ligne de texte. Le parseur de paragraphe refusait cette ligne sans la consommer : la boucle principale n'avançait plus. Même cause pour `#foo` (sans espace) et une citation indentée `  > citation`.

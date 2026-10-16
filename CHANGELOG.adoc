@@ -3,6 +3,10 @@
 :toc-title: Versions
 :toclevels: 2
 
+== v2.1.1.6 — 2026-10-16
+
+* ameba 1.7 and Crystal 1.22.0 in CI; new rules applied, no behaviour change.
+
 == v2.1.1.5 — 2026-09-29
 
 * Fix an infinite loop (100 % CPU, `convert` never returned) on a line starting with `|` that was not the header of a table with a separator row, e.g. `x| A | b |` followed by `| N | c |`, or a table row after a text line. The paragraph parser refused such a line without consuming it, so the main loop never advanced. Same cause for `#foo` (no space) and an indented `  > quote`.
